@@ -11,7 +11,7 @@ int main(void)
         printf("my prompt > ");
     
         gets(in_str);
-        
+    
         if((strcmp(in_str, "exit")) == 0)
         {
             printf("GoodBye :)\n");

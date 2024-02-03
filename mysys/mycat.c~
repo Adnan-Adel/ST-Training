@@ -1,0 +1,41 @@
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+       #include <fcntl.h>
+
+
+int open(const char *pathname, int flags);
+int main(void)
+{
+    int fd, num_read, num_writes;
+    unsigned char buf[100];
+
+    fd = open("mycat.c", O_RDONLY);
+
+    if (fd < 0) {
+	printf("could not open the file\n");
+	return -1;
+    }
+
+    num_read = read(fd, buf, 100);
+
+    printf("the file opened with fd= %d\n", fd);
+
+    if (num_read < 0) {
+	printf("could not read from the file\n");
+	return -1;
+    }
+
+    printf(">> I read %d bytes\n", num_read);
+
+    num_writes = write(1, buf, num_read);
+
+    if (num_writes < 0) {
+	printf("could not write to stdout\n");
+	return -1;
+    }
+    printf(">> I wrote %d bytes\n", num_writes);
+
+    return 0;
+}

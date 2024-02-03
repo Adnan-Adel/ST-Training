@@ -1,0 +1,369 @@
+./autorun.sh 
+sudo    reboot
+help ls
+help help
+help pwd
+man ls
+man man 
+man printf 
+printf "Hello\n"
+man printf 
+man man
+man 3 printf
+sudo apt update
+man read
+man man
+man kill
+vim
+less
+less /etc/passwd
+type pwd
+which pwd
+man 1 intro
+man 5 intro
+man -k intro
+man man
+printf g
+man ls
+pwd
+ls
+pwd
+ls Desktop
+ls /
+ls /home/
+ls /home/test/
+ls /media/test/VBox_GAs_7.0.14/
+ls /media/test/
+ls /media/test/VBox_GAs_7.0.14/
+ls /media/test/
+pwd
+ls /
+ls /home
+ls 
+ls /home/test/
+ls -l  
+ls 
+ls -l
+man ls
+pwd
+cd /
+pwd
+ls 
+cd /home/
+ls
+man cd
+type cd
+cd test/
+pwd
+mkdir new_folder
+ls
+pwd
+ls
+ls Downloads/
+ls mohamed
+ls usr
+ls /usr
+cd /
+ls usr
+cd -
+cd /home/test/new_folder/
+pwd
+ls /etc/
+cp /etc/passwd /home/test/new_folder/
+ls
+pwd
+ls .
+ls
+ls .
+pwd
+ls ..
+ls /home/test/
+cd ../
+pwd
+ls ..
+ls /home/
+;s
+ls
+cd new_folder/
+ls
+cat new_file 
+cat /etc/passwd
+more /etc/passwd
+less /etc/passwd
+more /etc/passwd
+less /etc/passw
+less /etc/passwd
+less /etc/passw6
+less /etc/passwd
+cp new_file  f1
+ls
+cat f1
+cat new_file 
+sudo -E apt update 
+sudo -E apt upgrade 
+sudo -E apt update 
+sudo -E apt upgrade 
+exit
+man 3 printf
+man 3 printf
+sudo -E apt install gcc
+man 3 printf
+sudo apt install vim
+vim ~/.bash_aliases
+gedit ~/.bash_aliases
+sudo apt install vim
+sudo -E apt install vim
+exit
+sudo apt update 
+sudo apt upgrade 
+sudo apt install vim
+vim
+exit
+man bash
+man sh
+man bash
+exit
+ls
+cd new_folder/
+ls
+mkdir new_dir
+ls
+rmdir new_dir/
+ls
+cp new_file  old_old
+diff new_file old_old 
+cat new_file 
+cat old_old 
+ls
+rm old_old 
+mkdir new_dor
+rm -ri new_dor/
+ls
+rm -ri new_dor/
+ls
+mkdir new_dir
+ls
+mv new_file new_dir/
+ls
+ls new_dir/
+ls
+mv f1 f2
+ls
+mv f2 new_dir/f3
+ls new_dir/
+cd new_dir/
+ls
+cat f3
+cat new_file 
+vim new_file 
+cat new_file 
+cat f3 
+diff f3 new_file 
+diff -u f3 new_file 
+gedit 
+gedit  & 
+ls
+man vi
+man vim
+vim 
+vim /etc/passwd
+vim 
+vim new_file 
+vim new_file2
+cat new_file
+cat new_file2 
+vim new_file2
+vim
+ls
+cat another_file 
+vim new_file2 
+nano
+cat new_file
+grep From new_file
+grep -n From new_file
+grep -rn From .
+grep -r -n From .
+grep -rn From .
+grep -rn From /home/test/new_folder/new_dir/
+grep -rn "From hm" .
+grep -rn "From G" .
+echo Reda
+echo "Hello World" 
+echo "Hello World" > st_file
+cat st_file 
+cat new_file
+echo "Hello World" > new_file
+cat new_file
+cat 
+cat < new_file
+cat new_file
+ls
+ls > ls_output
+ls
+cat ls_output 
+ls | grep new
+ls | grep new | grep 2
+ls | grep new | grep ahmed
+ls
+echo "ahmed mohamed abbas" 
+echo "ahmed mohamed abbas" | grep ahmed
+echo "ahmed mohamed abbas" | grep ahmed | grep ahmed
+echo "ahmed mohamed abbas" | grep ahmed | grep ahmed | grep mohamed
+grep ahmed new_file
+grep ahmed
+grep ahmed new_file
+grep ahmed 
+echo "ahmed mohamed abbas" | grep ahmed | grep ahmed | grep mohamed
+echo "ahmed mohamed abbas" | grep ahmed2 | grep ahmed | grep mohamed
+echo "ahmed mohamed abbas" | grep "ahmed mohamed"  
+history 
+echo "ahmed mohamed abbas" | grep ahmed | grep ahmed | grep mohamed
+vim /home/test/.bash_history 
+cd ~/
+pwd
+ls
+ls -a
+cd new_folder/new_dir/
+ls
+mkdir new
+cd new/
+ls 
+ls -a
+vim ~/.bash_aliases 
+source ~/.bash_aliases
+alias 
+ls
+ls -a
+cd ../
+ls
+rm new_file
+unalias rm
+rm new_file
+vim new
+vim new_file
+ls
+cat new_file
+source new_file
+ls -l new_file
+ls
+man apt
+man 1 apt
+man apt
+apt install vim
+sudo apt install vim
+sudo apt install gcc
+man gcc
+ks
+ls
+rm -r *
+ls
+vim 1.c
+cat 1.c 
+gcc 1.c 
+ls
+ls -l
+./a.out 
+which ls
+/usr/bin/ls
+./../../../../usr/bin/ls
+ls
+./a.out 
+cat 1.c 
+./ahmed
+/usr/bin/a.out
+/home/test/new_folder/new_dir/a.out 
+pwd
+ls
+./a.out 
+ls
+file 1.c 
+file a.out 
+ls
+cat 1.c 
+man gcc
+gcc -E 1.c 
+gcc -E 1.c  > 1.i
+mv 1.c 1.ahmed
+vim 1.ahmed 
+gcc 1.ahmed 
+gcc -E 1.ahmed 
+sl
+ls
+vim 1.ahmed 
+file 1.ahmed 
+man gcc
+ls
+mv 1.ahmed 1.c
+cat 1.c 
+gcc -E 1.c > 1.i 
+ls
+vim 1.i 
+vim 1.c 
+gcc -E 1.c > 1.i 
+vim 1.i 
+cat 1.c
+vim 1.c 
+gedit 1.c 
+ls
+man gcc
+gcc -S 1.i -o 1.s
+vim 1.s 
+gcc -S 1.i 
+ls
+rm 1.s 
+ls
+gcc -S 1.i 
+ls
+gcc -S 1.i -o ahmed.s
+ls -l
+ls
+vim ahmed.s 
+file ahmed.s 
+gcc -c ahmed.s -o ahmed.o
+ls 
+file ahmed.o 
+ls
+gcc ahmed.o x
+gcc ahmed.o 
+ls
+gcc ahmed.o  -o ahmed
+ls
+ls -l
+./ahmed 
+file ahmed
+ls
+gcc ahmed.o  -o ahmed -lc
+man gcc
+gcc ahmed.o  -o ahmed -nostdlib
+gcc ahmed.o  -o ahmed -nostdlib -lc
+gcc ahmed.o  -o ahmed 
+vim 1.c 
+vim 2.c
+ls
+rm a*
+ls
+rm 1.[is]
+ls
+gcc -c 2.c 
+ls
+gcc 2.o
+ls
+cat 1.c 
+cat 2.c
+gcc  -c 1.c
+ls
+file *
+man ld 
+gcc 1.o
+gcc 1.o 2.o -o myprog
+ls
+./myprog 
+alias 
+alias |grep gcc
+which gcc
+file /usr/bin/gcc
+file /usr/bin/gcc-11
+file /usr/bin/x86_64-linux-gnu-gcc-11 
+exit
+vim
+exit
