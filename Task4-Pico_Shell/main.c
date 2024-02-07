@@ -5,9 +5,10 @@
     
 int main()
 {   
+    char in_str[STR_MAX_LENGTH];
+    
     while(1)
     {
-        char in_str[STR_MAX_LENGTH];
         printf("my prompt > ");
     
         fgets(in_str, STR_MAX_LENGTH, stdin);

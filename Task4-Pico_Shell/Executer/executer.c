@@ -1,6 +1,6 @@
 #include "executer.h"
 
-const char* Commands[COMMANDS_LENGTH]= {"echo", "pwd", "cd", "exit"};
+const char* Commands[COMMANDS_LENGTH]= {"echo", "pwd", "cd", "exit", "cls"};
 
 uint8_t is_valid_Command(char* str)
 {
@@ -74,10 +74,10 @@ void executer(char** arr, uint32_t length)
             free(command);
             exit(0); // Exit the program
         } 
-        else 
+        else if(compare_str(command, "cls") == 1)
         {
-            printf("Unknown command: %s\n", command);
-            // Free the command
+            execute_cls();
+
             free(command);
         }
     }
@@ -92,7 +92,7 @@ void executer(char** arr, uint32_t length)
         else if(ret_pid > 0)
         {
             int status;
-            wait(status);
+            wait(&status);
         }
         
         else if(ret_pid == 0)
@@ -100,10 +100,10 @@ void executer(char** arr, uint32_t length)
             char* newargv[]={NULL};
             char* newenvp[]={NULL};
 
-            execve(*args, newargv, newenvp);
+            execve(command, newargv, newenvp);
         }
     }
-    
+ 
 }
 
 void execute_exit(void)
@@ -111,6 +111,11 @@ void execute_exit(void)
     // Execute exit command
     printf("Exit command executed\n");
     exit(0); // Exit the program
+}
+
+void execute_cls(void)
+{
+    system("cls");
 }
 
 void execute_pwd(void)
