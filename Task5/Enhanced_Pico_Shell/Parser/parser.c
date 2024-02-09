@@ -24,10 +24,10 @@ void Tokenizer(char* src)
             right++;
             com_arg[index_i]= substr;
             index_i++;
-            free(substr);  //Free allocated memory
+            //free(substr);  //Free allocated memory
         }
     }
-
+    
     executer(com_arg, index_i);
 }
 
