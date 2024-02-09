@@ -84,23 +84,25 @@ void executer(char** arr, uint32_t length)
 
     else
     {
+	printf("Not a valid commnd, trying to fork!\n");
         int ret_pid= fork();
 
         if(ret_pid < 0)
             printf("Fork Failed\n");
         
         else if(ret_pid > 0)
-        {
+       {
             int status;
             wait(&status);
         }
         
         else if(ret_pid == 0)
         {
+		printf("In child, command= %s\t, arr[0]= %s\n", command, arr[0]);
             char* newargv[]={NULL};
             char* newenvp[]={NULL};
 
-            execve(command, newargv, newenvp);
+            execve(arr[0], newargv, newenvp);
         }
     }
   
