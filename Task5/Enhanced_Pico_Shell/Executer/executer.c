@@ -1,6 +1,6 @@
 #include "executer.h"
 
-const char* Commands[COMMANDS_LENGTH]= {"echo", "pwd", "cd", "exit", "cls"};
+const char* Commands[COMMANDS_LENGTH]= {"echo", "pwd", "cd", "exit", "clear"};
 
 uint8_t is_valid_Command(char* str)
 {
@@ -74,15 +74,15 @@ void executer(char** arr, uint32_t length)
             free(command);
             exit(0); // Exit the program
         } 
-        else if(compare_str(command, "cls") == 1)
+        else if(compare_str(command, "clear") == 1)
         {
-            execute_cls();
+            execute_clear();
 
             free(command);
         }
     }
 
- /*   else
+    else
     {
         int ret_pid= fork();
 
@@ -103,19 +103,19 @@ void executer(char** arr, uint32_t length)
             execve(command, newargv, newenvp);
         }
     }
- */   
+  
 }
 
-void execute_exit(void)
+int execute_exit(void)
 {
     // Execute exit command
     printf("Exit command executed\n");
-    exit(0); // Exit the program
+    return (0); // Exit the program
 }
 
-void execute_cls(void)
+void execute_clear(void)
 {
-    system("cls");
+    system("clear");
 }
 
 void execute_pwd(void)
