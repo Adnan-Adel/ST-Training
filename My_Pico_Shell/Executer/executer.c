@@ -97,6 +97,7 @@ void executer(char** arr, uint32_t length)
         
         else if(ret_pid == 0)
         {
+            command= arr[0];
             char* newargv[]={NULL};
             char* newenvp[]={NULL};
 
