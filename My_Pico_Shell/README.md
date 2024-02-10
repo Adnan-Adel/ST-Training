@@ -1,6 +1,7 @@
 # Pico Shell
 
-##How does the shell works
+## How does the shell works
+
 ![alt text](image-1.png)
 
 ## Implementing a shell that can do the following
