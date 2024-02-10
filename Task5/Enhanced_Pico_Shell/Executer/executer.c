@@ -82,7 +82,7 @@ void executer(char** arr, uint32_t length)
         }
     }
 
- /*   else
+    else
     {
         int ret_pid= fork();
 
@@ -103,7 +103,7 @@ void executer(char** arr, uint32_t length)
             execve(command, newargv, newenvp);
         }
     }
- */   
+ 
 }
 
 void execute_exit(void)
