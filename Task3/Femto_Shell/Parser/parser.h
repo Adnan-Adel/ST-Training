@@ -6,11 +6,6 @@
 #define COMMANDS_LENGTH         4
 
 /* --------------------- data types Declarations --------------------- */
-typedef struct
-{
-    char* token;
-    char* token_type;
-}token_t;
 
 /* --------------------- Functions Declarations --------------------- */
 uint8_t is_valid_Command(char* str);
