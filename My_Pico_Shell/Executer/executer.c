@@ -1,6 +1,10 @@
 #include "executer.h"
+//#include <string.h>
+#include <sys/types.h>
+       #include <sys/stat.h>
+       #include <fcntl.h>
 
-const char* Commands[COMMANDS_LENGTH]= {"echo", "pwd", "cd", "exit", "cls"};
+const char* Commands[COMMANDS_LENGTH]= {"echo", "pwd", "cd", "exit", "clear"};
 
 uint8_t is_valid_Command(char* str)
 {
@@ -17,92 +21,84 @@ uint8_t is_valid_Command(char* str)
 
 void executer(char** arr, uint32_t length)
 {
-    uint32_t index_i= 1;
-    char* command;
-    char** args;
-
-
-    if(is_valid_Command(arr[0]) == 1)
+    if (is_valid_Command(arr[0]))
     {
         // Set the command
-        command = arr[0];
+        char* command = arr[0];
         
         // If it's a command with an argument
+        char** args = NULL;
         if (compare_str(command, "echo") == 1 || compare_str(command, "cd") == 1)
-        {
-            printf(">>>>>>>> I'm a command with an argument\n");
-            // Extract the argument
-            args= (char**)(++arr);
-        }
-        else
-        {
-            printf(">>>>>>>> I got no arguments\n");
-            // For commands like pwd and exit, execute directly without extracting arguments
-        }
-
-        if (command == NULL) 
-        {
-            printf("No command found\n");
-            return;
+       	{
+            args = ++arr;
         }
 
         if (compare_str(command, "echo") == 1) 
-        {
+	{
             execute_echo(args, length);
-
-            // Free the command and argument
-            free(command);
         }
-        else if (compare_str(command, "pwd") == 1) 
-        {
+       	else if (compare_str(command, "pwd") == 1) 
+	{
             execute_pwd();
-
-            // Free the command
-            free(command);
         }
-        else if (compare_str(command, "cd") == 1)
-        {
+       	else if (compare_str(command, "cd") == 1)
+       	{
             execute_cd(args, length);
-
-            // Free the command and argument
-            free(command);
-        } 
-        else if (compare_str(command, "exit") == 1)
-        {
-            execute_exit();
-
-            free(command);
-            exit(0); // Exit the program
-        } 
-        else if(compare_str(command, "cls") == 1)
-        {
-            execute_cls();
-
-            free(command);
         }
-    }
+       	else if (compare_str(command, "exit") == 1)
+       	{
+            execute_exit();
+	    exit(0);
+        }
+       	else if (compare_str(command, "clear") == 1)
+       	{
+            execute_clear();
+        }
+
+        // Free the command and argument
+        free(command);
+    } 
 
     else
     {
-        int ret_pid= fork();
+	    int ret_pid= fork();
 
         if(ret_pid < 0)
             printf("Fork Failed\n");
-        
+
         else if(ret_pid > 0)
         {
             int status;
             wait(&status);
         }
-        
+
         else if(ret_pid == 0)
         {
-            command= arr[0];
             char* newargv[]={NULL};
             char* newenvp[]={NULL};
+		
+	    if(arr[1] == "<")
+	    {
+		int fd= open(arr[2], O_RDONLY | O_CREAT);
+	        close(0);
+       		dup(fd);
+ 		close(fd);		
+	    }
+	    else if(arr[2] == ">")
+	    {
+		int fd= open(arr[3], O_RDWR | O_CREAT, 0644);
+                close(1);
+                dup(fd);
+                close(fd);
+	    }
 
-            execve(command, newargv, newenvp);
+            int ret= execve(arr[0], newargv, newenvp);
+	    if(ret == -1)
+	    {
+	 	    printf("Not a valid command!!\n");
+	    }
         }
+
     }
  
 }
@@ -114,9 +110,9 @@ void execute_exit(void)
     exit(0); // Exit the program
 }
 
-void execute_cls(void)
+void execute_clear(void)
 {
-    system("cls");
+    system("clear");
 }
 
 void execute_pwd(void)
@@ -135,15 +131,16 @@ void execute_echo(char** arg, uint32_t length)
         printf("%s ", arg[index_i]);
    }
     printf("\n");
+    free(*arg);
 }
 
 void execute_cd(char** arg, uint32_t length)
 {
     uint32_t index_i= 0;
     // Execute cd command
-    for(index_i= 0; index_i< length-1; index_i++)
+    if (chdir(*arg) != 0)
     {
-        printf("%s ", arg[index_i]);
+            perror("cd");
     }
-    printf("\n");
+    free(*arg);
 }
