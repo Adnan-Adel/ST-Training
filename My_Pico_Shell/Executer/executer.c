@@ -77,20 +77,7 @@ void executer(char** arr, uint32_t length)
             char* newargv[]={NULL};
             char* newenvp[]={NULL};
 		
-	    if(arr[1] == "<")
-	    {
-		int fd= open(arr[2], O_RDONLY | O_CREAT);
-	        close(0);
-       		dup(fd);
- 		close(fd);		
-	    }
-	    else if(arr[2] == ">")
-	    {
-		int fd= open(arr[3], O_RDWR | O_CREAT, 0644);
-                close(1);
-                dup(fd);
-                close(fd);
-	    }
+	    Handle_redirection(arr, length);
 
             int ret= execve(arr[0], newargv, newenvp);
 	    if(ret == -1)
@@ -143,4 +130,27 @@ void execute_cd(char** arg, uint32_t length)
             perror("cd");
     }
     free(*arg);
+}
+
+void Handle_redirection(char** arr, uint32_t length)
+{
+	uint32_t index_i= 0;
+	for(index_i= 1; index_i < length; index_i++)
+	{
+		if(*arr[index_i] == '<')
+		{
+			int in_fd= open(arr[index_i+1], O_RDWR | O_CREAT);
+			close(0);
+			dup(in_fd);
+			close(in_fd);
+		}
+		
+		else if(*arr[index_i] == '>')
+                {
+                        int out_fd= open(arr[index_i+1], O_RDWR | O_CREAT, 0644);
+                        close(1);
+                        dup(out_fd);
+                        close(out_fd);
+                }
+	}
 }
