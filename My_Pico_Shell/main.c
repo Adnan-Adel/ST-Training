@@ -12,6 +12,8 @@ int main()
         printf("my prompt > ");
     
         fgets(in_str, STR_MAX_LENGTH, stdin);
+	if(str_length(in_str)==1)
+		continue;
     
         Tokenizer(in_str);
     }

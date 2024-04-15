@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-//#include <sys/wait.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 /* --------------------- Macros Declarations --------------------- */
@@ -18,7 +18,7 @@ uint8_t is_valid_Command(char* str);
 void executer(char** ar, uint32_t length);
 
 void execute_exit(void);
-void execute_cls(void);
+void execute_clear(void);
 void execute_pwd(void);
 void execute_echo(char** arg, uint32_t length);
 void execute_cd(char** arg, uint32_t length);
