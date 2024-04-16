@@ -68,7 +68,7 @@ void Hmm_init(void)
 
 
 
-char* HmmAlloc(size_t size)
+void* HmmAlloc(size_t size)
 {
     FreeBlock_t* current_node= first_free;
     FreeBlock_t* prev_node= NULL;
@@ -104,7 +104,7 @@ char* HmmAlloc(size_t size)
             AllocatedBlock_t* AllocBlock= (AllocatedBlock_t*)current_node;
             AllocBlock->block_length= current_node->block_length;
             
-            AllocMem= (char*)AllocBlock + sizeof(AllocatedBlock_t);
+            AllocMem= (void*)((char*)AllocBlock + sizeof(FreeBlock_t));
 
             return AllocMem;
         }
@@ -113,7 +113,7 @@ char* HmmAlloc(size_t size)
             size_t TotalNewBlock_size= size + sizeof(FreeBlock_t);
             size_t FreeData_size= current_node->block_length;
             
-            if(TotalNewBlock_size <= FreeData_size)
+            if(TotalNewBlock_size < FreeData_size)
             {   // Split Block into two blocks, one of them would be of suitable size
                 // Make a new block in free data area of current block
                 current_node->block_length= current_node->block_length - TotalNewBlock_size;
@@ -154,7 +154,7 @@ char* HmmAlloc(size_t size)
                 AllocatedBlock_t* AllocBlock= (AllocatedBlock_t*)current_node;
                 AllocBlock->block_length= current_node->block_length;
                 
-                AllocMem= (char*)AllocBlock + sizeof(AllocatedBlock_t);
+                AllocMem= (void*)((char*)AllocBlock + sizeof(FreeBlock_t));
 
                 return AllocMem;
             }
@@ -186,30 +186,47 @@ char* HmmAlloc(size_t size)
                 AllocatedBlock_t* AllocBlock= (AllocatedBlock_t*)current_node;
                 AllocBlock->block_length= current_node->block_length;
                 
-                AllocMem= (char*)AllocBlock + sizeof(AllocatedBlock_t);
+                AllocMem= (void*)((char*)AllocBlock + sizeof(FreeBlock_t));
 
                 return AllocMem;
             }
         }
         else if(size > current_node->block_length)
         {
-            FreeBlock_t* StartFree= (FreeBlock_t*)current_node;
+            FreeBlock_t* TempFree= (FreeBlock_t*)current_node;
             size_t sum_length= 0;
-            while((current_node != NULL) && (sum_length < size))
+            while((TempFree != NULL) && (sum_length < size))
             {
-                sum_length += current_node->block_length;
-                current_node= current_node->next_free;
+                sum_length += TempFree->block_length;
+                TempFree= TempFree->next_free;
             }
             if(sum_length >= size)
             {
                 // Merge those free blocks
-                MergeFreeBlocks(StartFree);
+                FreeBlock_t* NextFreeBlock= current_node->next_free;
+                while((current_node != NULL) && (NextFreeBlock != NULL))
+                {
+                    // Check if current free block and next free block are contiguous
+                    if(((char*)current_node + current_node->block_length + sizeof(FreeBlock_t)) == ((char*)NextFreeBlock))
+                    {
+                        // Merge two blocks
+                        current_node->block_length= current_node->block_length + NextFreeBlock->block_length + sizeof(FreeBlock_t);
+                        current_node->next_free= NextFreeBlock->next_free;
+                    }
+                    
+                    // Update Next Free
+                    NextFreeBlock= NextFreeBlock->next_free;
+                    if(NextFreeBlock != NULL)
+                    {
+                        NextFreeBlock->prev_free= current_node;
+                    }
+                }
                 
                 // Allocate the merged bigger block for user
                 AllocatedBlock_t* AllocBlock= (AllocatedBlock_t*)current_node;
                 AllocBlock->block_length= current_node->block_length;
                 
-                AllocMem= (char*)AllocBlock + sizeof(AllocatedBlock_t);
+                AllocMem= (void*)((char*)AllocBlock + sizeof(FreeBlock_t));
 
                 return AllocMem; 
             }
@@ -260,7 +277,7 @@ char* HmmAlloc(size_t size)
     AllocatedBlock_t* AllocBlock= (AllocatedBlock_t*)current_node;
     AllocBlock->block_length= current_node->block_length;
     
-    AllocMem= (char*)AllocBlock + sizeof(AllocatedBlock_t);
+    AllocMem= (void*)((char*)AllocBlock + sizeof(FreeBlock_t));
 
     return AllocMem;
     
@@ -268,26 +285,27 @@ char* HmmAlloc(size_t size)
 
 void HmmFree(void* ptr)
 {
+    
     if(ptr == NULL)
     {
         printf("Attempting to free NULL Pointer!!!!\n");
         return;
     }
 
+    // Find the corresponding free block
+    FreeBlock_t* free_block = (FreeBlock_t*)((char*)ptr - sizeof(FreeBlock_t));
+
     // Check if block has already been freed before
     FreeBlock_t* current_free= first_free;
     while(current_free != NULL)
     {
-        if(ptr == current_free)
+        if(free_block == current_free)
         {
             printf("Block has already been freed before!!!\n");
             return;
         }
         current_free= current_free->next_free;
     }
-
-    // Find the corresponding free block
-    FreeBlock_t* free_block = (FreeBlock_t*)((char*)ptr - sizeof(FreeBlock_t));
 
     // Add the block back to the free list
     if (first_free == NULL)
@@ -308,18 +326,20 @@ void HmmFree(void* ptr)
         free_block->prev_free = last_free;
     }
 
+    free_block->next_free= NULL;
+
     if(free_block < first_free)
     {
         first_free= free_block;
     }
 
     // Merge Adjacent Free Blocks
-    MergeFreeBlocks(first_free);
+    //MergeFreeBlocks();
 }
 
-void MergeFreeBlocks(FreeBlock_t* Start)
+void MergeFreeBlocks(void)
 {
-    FreeBlock_t* CurrentFreeBlock= Start;
+    FreeBlock_t* CurrentFreeBlock= first_free;
     FreeBlock_t* NextFreeBlock= CurrentFreeBlock->next_free;
     while((CurrentFreeBlock != NULL) && (NextFreeBlock != NULL))
     {

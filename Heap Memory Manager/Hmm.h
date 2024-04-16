@@ -15,18 +15,16 @@ typedef struct FreeBlock_t
     size_t block_length;
     struct FreeBlock_t* prev_free;
     struct FreeBlock_t* next_free;
-    //void* FreeData;
 }FreeBlock_t;
 
 typedef struct
 {
     size_t block_length;
-    //void* AllocatedData;
 }AllocatedBlock_t;
 
 void Hmm_init(void);
-char* HmmAlloc(size_t size);
+void* HmmAlloc(size_t size);
 void HmmFree(void* ptr);
-void MergeFreeBlocks(FreeBlock_t* Start);
+void MergeFreeBlocks();
 
 #endif
