@@ -19,7 +19,7 @@ void Hmm_init(void)
 
     // Traverse Allocated Memory reigion and make 10 blocks of data size= 1Kbytes
     FreeBlock_t* current_free_block = first_free;
-    for (int i = 0; i < 9; ++i) 
+    for (int i = 0; i < 9; i++) 
     {
         FreeBlock_t* next_free_block = (FreeBlock_t*)((char*)current_free_block + block_size);
         next_free_block->block_length = DEFAULT_BLOCK_LENGTH;
@@ -29,6 +29,7 @@ void Hmm_init(void)
         current_free_block->next_free = next_free_block;
         current_free_block = next_free_block;
     }
+    current_free_block->next_free= NULL;
 
     /*Debugging*/
 
@@ -213,7 +214,10 @@ void* HmmAlloc(size_t size)
                         current_node->block_length= current_node->block_length + NextFreeBlock->block_length + sizeof(FreeBlock_t);
                         current_node->next_free= NextFreeBlock->next_free;
                     }
-                    
+                    else
+                    {
+                        break;
+                    }
                     // Update Next Free
                     NextFreeBlock= NextFreeBlock->next_free;
                     if(NextFreeBlock != NULL)
@@ -221,6 +225,23 @@ void* HmmAlloc(size_t size)
                         NextFreeBlock->prev_free= current_node;
                     }
                 }
+
+                if(current_node->prev_free == NULL)
+                {
+                    first_free= current_node->next_free;
+                }
+                else
+                {
+                    current_node->prev_free->next_free= current_node->next_free;
+                }
+                
+                if(current_node->next_free != NULL)
+                {
+                    current_node->next_free->prev_free= current_node->prev_free;
+                }
+
+                current_node->next_free= NULL;
+                current_node->prev_free= NULL;
                 
                 // Allocate the merged bigger block for user
                 AllocatedBlock_t* AllocBlock= (AllocatedBlock_t*)current_node;
@@ -239,48 +260,68 @@ void* HmmAlloc(size_t size)
 
     // No suitable block in free list for the required block, allocate new memory using sbrk
     size_t block_size = size + META_DATA_SIZE; // Include metadata size
-    if (block_size < DEFAULT_MEM_ALLOC)
-    {
-        block_size = DEFAULT_MEM_ALLOC; // Allocate a default size
-    }
+    size_t Alloc_size= block_size * 10;
 
-    current_node = (FreeBlock_t*)sbrk(block_size);
-    if (current_node == (void*)-1)
+    current_node= (FreeBlock_t*)sbrk(Alloc_size);
+    current_node->block_length= size;
+    if(first_free == NULL)
     {
-        // sbrk failed to allocate memory
-        return NULL;
-    }
-
-    current_node->block_length = block_size - META_DATA_SIZE; // Exclude metadata size
-    current_node->prev_free = NULL;
-    current_node->next_free = NULL;
-
-    // Connect the new block with the existing free list
-    if (first_free == NULL)
-    {
-        // If the free list is empty, set the new block as the first block
-        first_free = current_node;
+        current_node->prev_free= NULL;
+        first_free= current_node;
     }
     else
     {
-        // Find the last block in the free list and connect it with the new block
-        FreeBlock_t* last_node = first_free;
-        while (last_node->next_free != NULL)
+        // Find the last block in the free list and connect it with the free block
+        FreeBlock_t* last_free = first_free;
+        while (last_free->next_free != NULL)
         {
-            last_node = last_node->next_free;
+            last_free = last_free->next_free;
         }
-        last_node->next_free = current_node;
-        current_node->prev_free = last_node;
+        last_free->next_free = current_node;
+        current_node->prev_free = last_free;
     }
 
-    // Update AllocBlock to point to the same memory location as current_node
+    // Split this new area into 10 bloks of block size
+    FreeBlock_t* temp_current_node = current_node;
+    for (int i = 0; i < 9; i++) 
+    {
+        FreeBlock_t* next_free_block = (FreeBlock_t*)((char*)temp_current_node + block_size);
+        next_free_block->block_length = size;
+        next_free_block->prev_free = temp_current_node;
+        next_free_block->next_free = NULL;
+
+        temp_current_node->next_free = next_free_block;
+        temp_current_node = next_free_block;
+    }
+    temp_current_node->next_free= NULL;
+
+
+    // Allocate current block for user
+    if(current_node->prev_free == NULL)
+    {
+        first_free= current_node->next_free;
+    }
+    else
+    {
+        current_node->prev_free->next_free= current_node->next_free;
+    }
+    
+    if(current_node->next_free != NULL)
+    {
+        current_node->next_free->prev_free= current_node->prev_free;
+    }
+
+    current_node->next_free= NULL;
+    current_node->prev_free= NULL;
+    
+    // Allocate the merged bigger block for user
     AllocatedBlock_t* AllocBlock= (AllocatedBlock_t*)current_node;
     AllocBlock->block_length= current_node->block_length;
     
     AllocMem= (void*)((char*)AllocBlock + sizeof(FreeBlock_t));
 
     return AllocMem;
-    
+
 }
 
 void HmmFree(void* ptr)
