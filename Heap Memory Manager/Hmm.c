@@ -19,17 +19,18 @@ void Hmm_init(void)
 
     // Traverse Allocated Memory reigion and make 10 blocks of data size= 1Kbytes
     FreeBlock_t* current_free_block = first_free;
-    for (int i = 0; i < 9; i++) 
+    size_t temp_length= (DEFAULT_BLOCK_LENGTH + META_DATA_SIZE);
+    while(temp_length < DEFAULT_MEM_ALLOC)
     {
         FreeBlock_t* next_free_block = (FreeBlock_t*)((char*)current_free_block + block_size);
         next_free_block->block_length = DEFAULT_BLOCK_LENGTH;
         next_free_block->prev_free = current_free_block;
         next_free_block->next_free = NULL;
 
+        temp_length += (DEFAULT_BLOCK_LENGTH + META_DATA_SIZE);
         current_free_block->next_free = next_free_block;
         current_free_block = next_free_block;
     }
-    current_free_block->next_free= NULL;
 
     /*Debugging*/
 
@@ -130,22 +131,10 @@ void* HmmAlloc(size_t size)
                 current_node= current_node->next_free;
 
                 // Remove Allocated Block from Free List
-                if(prev_node == NULL)
+                prev_node->next_free= current_node->next_free;
+                if(current_node->next_free != NULL)
                 {
-                    // First Node in List, SO move first free
-                    first_free= first_free->next_free;
-                    if(first_free != NULL)
-                    {
-                        first_free->prev_free= NULL;
-                    }
-                }
-                else
-                {
-                    prev_node->next_free= current_node->next_free;
-                    if(current_node->next_free != NULL)
-                    {
-                        current_node->next_free->prev_free= prev_node;
-                    }
+                    current_node->next_free->prev_free= prev_node;
                 }
 
                 current_node->prev_free= NULL;
@@ -194,18 +183,37 @@ void* HmmAlloc(size_t size)
         }
         else if(size > current_node->block_length)
         {
-            FreeBlock_t* TempFree= (FreeBlock_t*)current_node;
-            size_t sum_length= 0;
-            while((TempFree != NULL) && (sum_length < size))
+            FreeBlock_t* TempCurrentFree= (FreeBlock_t*)current_node;
+            FreeBlock_t* TempNextFree= (FreeBlock_t*)current_node->next_free;
+            size_t sum_length= current_node->block_length;      // Size of data in current block
+            unsigned int num_of_blocks= 0;
+            while(sum_length < size)
             {
-                sum_length += TempFree->block_length;
-                TempFree= TempFree->next_free;
+                if(TempNextFree == NULL)
+                {
+                    break;
+                }
+                else if(((char*)TempCurrentFree + sum_length + sizeof(FreeBlock_t)) == ((char*)TempNextFree))
+                {
+                    sum_length += TempNextFree->block_length + META_DATA_SIZE;
+                    num_of_blocks++;
+                }
+                else
+                {
+                    // Not Contiguous
+                    TempCurrentFree= TempNextFree;
+                    sum_length= TempCurrentFree->block_length;
+                    num_of_blocks= 0;
+                }
+                TempNextFree= TempNextFree->next_free;
             }
+            current_node= TempCurrentFree;
+            
             if(sum_length >= size)
             {
                 // Merge those free blocks
                 FreeBlock_t* NextFreeBlock= current_node->next_free;
-                while((current_node != NULL) && (NextFreeBlock != NULL))
+                while((NextFreeBlock != NULL) && (num_of_blocks--))
                 {
                     // Check if current free block and next free block are contiguous
                     if(((char*)current_node + current_node->block_length + sizeof(FreeBlock_t)) == ((char*)NextFreeBlock))
@@ -283,17 +291,18 @@ void* HmmAlloc(size_t size)
 
     // Split this new area into 10 bloks of block size
     FreeBlock_t* temp_current_node = current_node;
-    for (int i = 0; i < 9; i++) 
+    size_t temp_length= (block_size);
+    while(temp_length < Alloc_size)
     {
         FreeBlock_t* next_free_block = (FreeBlock_t*)((char*)temp_current_node + block_size);
         next_free_block->block_length = size;
         next_free_block->prev_free = temp_current_node;
         next_free_block->next_free = NULL;
 
+        temp_length += temp_current_node->block_length + META_DATA_SIZE;
         temp_current_node->next_free = next_free_block;
         temp_current_node = next_free_block;
     }
-    temp_current_node->next_free= NULL;
 
 
     // Allocate current block for user
@@ -333,17 +342,26 @@ void HmmFree(void* ptr)
         return;
     }
 
-    // Find the corresponding free block
-    FreeBlock_t* free_block = (FreeBlock_t*)((char*)ptr - sizeof(FreeBlock_t));
+    // Find the corresponding start of allocated block
+    FreeBlock_t* block_start = (FreeBlock_t*)((char*)ptr - sizeof(FreeBlock_t));
 
     // Check if block has already been freed before
     FreeBlock_t* current_free= first_free;
     while(current_free != NULL)
     {
-        if(free_block == current_free)
+        if((block_start == current_free))
         {
             printf("Block has already been freed before!!!\n");
             return;
+        }
+        else if((block_start > current_free) && (block_start < current_free->next_free))
+        {
+            FreeBlock_t* next= current_free + current_free->block_length + 2*META_DATA_SIZE + block_start->block_length;
+            if(current_free->next_free == next)
+            {
+                printf("Block has already been freed before!!!\n");
+                return;
+            }
         }
         current_free= current_free->next_free;
     }
@@ -352,7 +370,7 @@ void HmmFree(void* ptr)
     if (first_free == NULL)
     {
         // If the free list is empty, set the free block as the first block
-        first_free = free_block;
+        first_free = block_start;
     }
     
     else
@@ -363,16 +381,11 @@ void HmmFree(void* ptr)
         {
             last_free = last_free->next_free;
         }
-        last_free->next_free = free_block;
-        free_block->prev_free = last_free;
+        last_free->next_free = block_start;
+        block_start->prev_free = last_free;
     }
 
-    free_block->next_free= NULL;
-
-    if(free_block < first_free)
-    {
-        first_free= free_block;
-    }
+    block_start->next_free= NULL;
 
     // Merge Adjacent Free Blocks
     //MergeFreeBlocks();
@@ -381,23 +394,31 @@ void HmmFree(void* ptr)
 void MergeFreeBlocks(void)
 {
     FreeBlock_t* CurrentFreeBlock= first_free;
-    FreeBlock_t* NextFreeBlock= CurrentFreeBlock->next_free;
-    while((CurrentFreeBlock != NULL) && (NextFreeBlock != NULL))
+    FreeBlock_t* NextFreeBlock= CurrentFreeBlock;
+    while(CurrentFreeBlock != NULL)
     {
-        // Check if current free block and next free block are contiguous
-        if(((char*)CurrentFreeBlock + CurrentFreeBlock->block_length + sizeof(FreeBlock_t)) == ((char*)NextFreeBlock))
+        while(NextFreeBlock != NULL)
         {
-            // Merge two blocks
-            CurrentFreeBlock->block_length= CurrentFreeBlock->block_length + NextFreeBlock->block_length + sizeof(FreeBlock_t);
-            CurrentFreeBlock->next_free= NextFreeBlock->next_free;
+            NextFreeBlock= CurrentFreeBlock->next_free;
+            // Check if current free block and next free block are contiguous
+            if(((char*)CurrentFreeBlock + CurrentFreeBlock->block_length + sizeof(FreeBlock_t)) == ((char*)NextFreeBlock))
+            {
+                // Merge two blocks
+                CurrentFreeBlock->block_length= CurrentFreeBlock->block_length + NextFreeBlock->block_length + sizeof(FreeBlock_t);
+                CurrentFreeBlock->next_free= NextFreeBlock->next_free;
+            }
+            else
+            {
+                break;
+            }
+            // Update Next Free
+            NextFreeBlock= NextFreeBlock->next_free;
+            if(NextFreeBlock != NULL)
+            {
+                NextFreeBlock->prev_free= CurrentFreeBlock;
+            }
         }
-        
-        // Update Next Free
-        NextFreeBlock= NextFreeBlock->next_free;
-        if(NextFreeBlock != NULL)
-        {
-            NextFreeBlock->prev_free= CurrentFreeBlock;
-        }
+        CurrentFreeBlock= CurrentFreeBlock->next_free;
     }
 }
 
