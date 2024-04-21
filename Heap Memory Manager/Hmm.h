@@ -27,4 +27,6 @@ void* HmmAlloc(size_t size);
 void HmmFree(void* ptr);
 void MergeFreeBlocks();
 
+void Print_FreeList(void);
+
 #endif

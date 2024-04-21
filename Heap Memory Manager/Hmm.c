@@ -30,42 +30,7 @@ void Hmm_init(void)
         temp_length += (DEFAULT_BLOCK_LENGTH + META_DATA_SIZE);
         current_free_block->next_free = next_free_block;
         current_free_block = next_free_block;
-    }
-
-    /*Debugging*/
-
-    /*printf("Initialized memory allocator with 10 blocks of size 1KB each.\n");
-    printf("Memory layout:\n");
-    current_free_block = first_free;
-    int block_number = 1;
-    while (current_free_block != NULL)
-    {
-        printf("Block %d:\n", block_number++);
-        printf("    Address: %p\n", current_free_block);
-        printf("    Block Length: %zu bytes\n", current_free_block->block_length);
-        printf("    Previous Free Block: %p\n", current_free_block->prev_free);
-        printf("    Next Free Block: %p\n", current_free_block->next_free);
-        printf("    Data Area Address: %p\n", (char*)current_free_block + sizeof(FreeBlock_t));
-        printf("\n");
-
-        current_free_block = current_free_block->next_free;
-    }
-
-    // Print data in each block's data area
-    printf("Data in Data Area:\n");
-    current_free_block = first_free;
-    while (current_free_block != NULL)
-    {
-        char* data_area = (char*)current_free_block + sizeof(FreeBlock_t);
-        for (int i = 0; i < DEFAULT_BLOCK_LENGTH; ++i) 
-        {
-            printf("%d", i);  // Assign 'A' to 'Z' cyclically
-        }
-        printf("\n\n");
-        current_free_block = current_free_block->next_free;
-    }
-    printf("\n\n");*/
-    
+    }    
 }
 
 
@@ -208,7 +173,7 @@ void* HmmAlloc(size_t size)
                 TempNextFree= TempNextFree->next_free;
             }
             current_node= TempCurrentFree;
-            
+
             if(sum_length >= size)
             {
                 // Merge those free blocks
@@ -335,7 +300,6 @@ void* HmmAlloc(size_t size)
 
 void HmmFree(void* ptr)
 {
-    
     if(ptr == NULL)
     {
         printf("Attempting to free NULL Pointer!!!!\n");
@@ -388,7 +352,19 @@ void HmmFree(void* ptr)
     block_start->next_free= NULL;
 
     // Merge Adjacent Free Blocks
-    //MergeFreeBlocks();
+    MergeFreeBlocks();
+
+    // Lower program break if allowed
+    FreeBlock_t* last_free = first_free;
+    while (last_free->next_free != NULL)
+    {
+        last_free = last_free->next_free;
+    }
+    if(last_free->block_length >= (50 * 1024))
+    {
+        last_free->prev_free->next_free= NULL;
+        sbrk(-50 * 1024);
+    }
 }
 
 void MergeFreeBlocks(void)
@@ -422,3 +398,13 @@ void MergeFreeBlocks(void)
     }
 }
 
+
+/*
+void Print_FreeList(void)
+{
+    FreeBlock_t* TempFree= first_free;
+    while(TempFree != NULL)
+    {
+        TempFree= TempFree->next_free;
+    }
+}*/
