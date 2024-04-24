@@ -1,7 +1,6 @@
 #include "Hmm.h"
 
 static FreeBlock_t* first_free= NULL;
-static FreeBlock_t* last_free= NULL;
 
 void Hmm_init(void)
 {
@@ -349,21 +348,42 @@ void HmmFree(void* ptr)
         block_start->prev_free = last_free;
     }
 
+
     block_start->next_free= NULL;
 
     // Merge Adjacent Free Blocks
     MergeFreeBlocks();
 
     // Lower program break if allowed
-    FreeBlock_t* last_free = first_free;
-    while (last_free->next_free != NULL)
+    FreeBlock_t* TempCurrent = first_free;
+    FreeBlock_t* LastFreeBlock_Add= first_free;
+    FreeBlock_t* LastFreeBlock= first_free;
+    while (TempCurrent != NULL)
     {
-        last_free = last_free->next_free;
+        if(((FreeBlock_t*)TempCurrent) > ((FreeBlock_t*)LastFreeBlock_Add))
+        {
+            LastFreeBlock_Add= TempCurrent;
+        }
+        TempCurrent= TempCurrent->next_free;
     }
-    if(last_free->block_length >= (50 * 1024))
+    while(LastFreeBlock->next_free != NULL)
     {
-        last_free->prev_free->next_free= NULL;
-        sbrk(-50 * 1024);
+        LastFreeBlock= LastFreeBlock->next_free;
+    }
+    if(LastFreeBlock == LastFreeBlock_Add)
+    {
+        if(LastFreeBlock_Add->block_length >= (300 * 1024))
+        {
+            if(LastFreeBlock_Add->prev_free != NULL)
+            {
+                LastFreeBlock_Add->prev_free->next_free= NULL;
+            }
+            else
+            {
+                first_free= NULL;
+            }
+            sbrk(-300 * 1024);
+        }  
     }
 }
 
@@ -373,9 +393,9 @@ void MergeFreeBlocks(void)
     FreeBlock_t* NextFreeBlock= CurrentFreeBlock;
     while(CurrentFreeBlock != NULL)
     {
+        NextFreeBlock= CurrentFreeBlock->next_free;
         while(NextFreeBlock != NULL)
         {
-            NextFreeBlock= CurrentFreeBlock->next_free;
             // Check if current free block and next free block are contiguous
             if(((char*)CurrentFreeBlock + CurrentFreeBlock->block_length + sizeof(FreeBlock_t)) == ((char*)NextFreeBlock))
             {
@@ -398,13 +418,72 @@ void MergeFreeBlocks(void)
     }
 }
 
-
-/*
-void Print_FreeList(void)
+void* HmmRealloc(void *ptr, size_t size)
 {
-    FreeBlock_t* TempFree= first_free;
-    while(TempFree != NULL)
+    if(ptr == NULL)
     {
-        TempFree= TempFree->next_free;
+        HmmAlloc(size);
     }
-}*/
+    else
+    {
+        if(size == 0)
+        {
+            HmmFree(ptr);
+        }
+        else
+        {
+            AllocatedBlock_t* block = (AllocatedBlock_t*)((char*)ptr - sizeof(FreeBlock_t));
+
+            // Get Old Length
+            size_t PreviousLength= block->block_length;
+
+            if(size <= PreviousLength)
+            {
+                // Change block length
+                block->block_length= size;
+
+                if((PreviousLength - size) >= META_DATA_SIZE)
+                {
+                    // Free Last of Block
+                    AllocatedBlock_t* NextBlock= block + META_DATA_SIZE + block->block_length;
+                    NextBlock->block_length= PreviousLength - block->block_length - META_DATA_SIZE;
+                    HmmFree(NextBlock + META_DATA_SIZE);
+                }
+                else
+                {
+                    // Can't be freed
+                    block->block_length= PreviousLength;
+                }
+
+                return ptr;
+            } 
+            else
+            {
+                // Make a new Alloc
+                AllocatedBlock_t* NewAllocBlock= HmmAlloc(size);
+
+                // Copy data from old block to new one
+                memcpy(NewAllocBlock, ptr, size);   
+
+                // Free old block
+                HmmFree(ptr);
+
+                return NewAllocBlock;
+            }
+        }
+    }
+}
+
+void* HmmCalloc(size_t nmemb, size_t size)
+{
+    void* ptr= HmmAlloc(nmemb * size);
+
+    if(ptr == NULL)
+    {
+        return NULL;
+    }
+
+    memset(ptr, 0, nmemb * size);
+
+    return ptr;
+}
