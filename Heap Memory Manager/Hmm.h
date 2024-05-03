@@ -24,6 +24,7 @@ typedef struct
 }AllocatedBlock_t;
 
 void Hmm_init(void);
+
 void* HmmAlloc(size_t size);
 void HmmFree(void* ptr);
 void MergeFreeBlocks();

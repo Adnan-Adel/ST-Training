@@ -381,14 +381,7 @@ void MergeFreeBlocks(void)
 void LowerProgramBreak()
 {
     FreeBlock_t* CurrentFreeBlock= first_free;
-    FreeBlock_t* List_LastFreeBlock= first_free;
     FreeBlock_t* Add_LastFreeBlock= first_free;
-
-    // Find Last Free Block in List
-    while(List_LastFreeBlock->next_free != NULL)
-    {
-        List_LastFreeBlock= List_LastFreeBlock->next_free;
-    }
 
     // Find Last Free Block in memory (Bigger Address)
     while(CurrentFreeBlock != NULL)
@@ -400,25 +393,26 @@ void LowerProgramBreak()
         CurrentFreeBlock= CurrentFreeBlock->next_free;
     }
 
-    if(List_LastFreeBlock == Add_LastFreeBlock)
+    size_t total_size= (Add_LastFreeBlock->block_length) + META_DATA_SIZE;
+
+    if(total_size >= DEFAULT_LOWERING_VAL)
     {
-        size_t total_size= (List_LastFreeBlock->block_length) + META_DATA_SIZE;
-
-        if(total_size >= DEFAULT_LOWERING_VAL)
+        if(Add_LastFreeBlock->prev_free != NULL)
         {
-            if(List_LastFreeBlock->prev_free != NULL)
-            {
-                List_LastFreeBlock->prev_free->next_free= NULL;
-            }
-            else
-            {
-                first_free= NULL;
-            }
-
-            // Lower Program Break
-            total_size= -1 * total_size;
-            sbrk(total_size);
+            Add_LastFreeBlock->prev_free->next_free= Add_LastFreeBlock->next_free;
         }
+        if(Add_LastFreeBlock->next_free != NULL)
+        {
+            Add_LastFreeBlock->next_free->prev_free= Add_LastFreeBlock->prev_free;
+        }
+        if((Add_LastFreeBlock->prev_free != NULL) && (Add_LastFreeBlock->next_free != NULL))
+        {
+            first_free= NULL;
+        }
+
+        // Lower Program Break
+        total_size= -1 * total_size;
+        sbrk(total_size);
     }
 
 }
