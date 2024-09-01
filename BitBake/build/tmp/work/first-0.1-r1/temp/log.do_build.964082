@@ -1,0 +1,3 @@
+DEBUG: Executing shell function do_build
+/home/adnan/AdnanStuff/ST/Task/build/tmp/work/first-0.1-r1/temp/run.do_build.964082: 73: /home/adnan/AdnanStuff/ST/Task/build/tmp/work/first-0.1-r1/../Heap: not found
+WARNING: exit code 127 from a shell command.

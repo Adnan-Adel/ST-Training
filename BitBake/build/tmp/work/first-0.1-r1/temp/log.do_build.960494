@@ -1,0 +1,6 @@
+DEBUG: Executing python function do_build
+DEBUG: Executing python function base_do_build
+NOTE: The included, default BB base.bbclass does not define a useful default task.
+NOTE: Try running the 'listtasks' task against a .bb to see what tasks are defined.
+DEBUG: Python function base_do_build finished
+DEBUG: Python function do_build finished

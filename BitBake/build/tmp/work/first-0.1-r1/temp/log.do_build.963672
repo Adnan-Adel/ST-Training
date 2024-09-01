@@ -1,0 +1,4 @@
+DEBUG: Executing shell function do_build
+gcc: fatal error: input file ‘/home/adnan/AdnanStuff/ST/Task/build/tmp/work/first-0.1-r1/../Heap’ is the same as output file
+compilation terminated.
+WARNING: exit code 1 from a shell command.

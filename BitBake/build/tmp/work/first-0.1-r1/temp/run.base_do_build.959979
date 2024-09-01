@@ -1,0 +1,6 @@
+def base_do_build(d):
+    bb.note("The included, default BB base.bbclass does not define a useful default task.")
+    bb.note("Try running the 'listtasks' task against a .bb to see what tasks are defined.")
+
+base_do_build(d)
+
