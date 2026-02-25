@@ -161,8 +161,8 @@ The `Makefile` compiles `Hmm.c` and `project.c` into `FINAL.out`.
 ## Running Tests
 
 ```bash
-gcc -g -Wall -o test_hmm Hmm.c tests/test_main.c -I.
-./test_hmm
+gcc -g -Wall -o test_hmm Hmm.c project.c -I.
+./FINAL.out
 ```
 
 Expected output ends with:
@@ -174,11 +174,3 @@ Expected output ends with:
 The test suite covers: basic alloc/free, double-free safety, free(NULL), 8-byte alignment, 20 concurrent allocations, large allocations (heap growth), calloc zero-initialisation, realloc edge cases (NULL, size 0, grow), and non-overlapping allocation verification.
 
 ---
-
-## Known Limitations
-
-- **Not thread-safe.** There is no locking around the free list. Do not use from multiple threads without adding a mutex around all public API calls.
-- **No boundary tags.** Coalescing works only between blocks that are currently on the free list; a freed block cannot merge with an allocated neighbour even if it is physically adjacent.
-- **First-fit only.** Best-fit or segregated-fit would reduce fragmentation for workloads with many different allocation sizes.
-- **`sbrk` is deprecated on some platforms** (macOS since 10.12, not available on Windows). A portable alternative would use `mmap`/`VirtualAlloc`.
-- **Double-free detection is O(n).** The guard traverses the entire free list on every `HmmFree`. In production this would be replaced with a canary or red-zone in the block header.
